@@ -9,6 +9,12 @@ def gaussian_noisify(signal, snr):
     noise = np.random.normal(0, np.sqrt(noise_avg), signal.shape)
     noisy_signal = signal + noise
 
+    if noisy_signal[noisy_signal < 0].size > 0 or noisy_signal[noisy_signal > 255].size > 0:
+        L = noisy_signal.min()
+        #rescale the image to 0-255
+        noisy_signal = (255 * (noisy_signal - L) / np.ptp(noisy_signal)).astype(int)
+
+
     return noisy_signal
 
 def salt_and_pepper_noise(signal, noise_ratio):

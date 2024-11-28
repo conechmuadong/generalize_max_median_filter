@@ -2,7 +2,7 @@ from filter import generalize_max_median_filter
 import cv2 as cv
 import matplotlib.pyplot as plt
 import argparse
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import root_mean_squared_error
 
 from noisify import noisify
 
@@ -12,13 +12,13 @@ def evaluate(image, n, noise_type = 'gaussian', **kwargs):
     if noise_type != 'None':
         noise_image = noisify(image, noise_type, **kwargs)
     filtered_image = []
-    for r in range(1,7):
+    for r in range(1,n):
         filtered_image.append(generalize_max_median_filter(noise_image, n, r))
 
-    mean_squared_errors = [mean_squared_error(image, filtered) for filtered in filtered_image]
-    plt.plot(range(1, 7), mean_squared_errors)
+    root_mean_squared_errors = [root_mean_squared_error(image, filtered) for filtered in filtered_image]
+    plt.plot(range(1, n), root_mean_squared_errors)
     plt.xlabel('r')
-    plt.ylabel('MSE')
+    plt.ylabel('rMSE')
     plt.show()
 
     return filtered_image, image, noise_image
@@ -37,16 +37,16 @@ def plot_images(images, source_image, noise_image=None):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image', type=str, required=True)
-    parser.add_argument('--n', type=int, required=True)
-    parser.add_argument('--noise_type', type=str, default='None')
-    parser.add_argument('--snr', type=float, default=20)
-    parser.add_argument('--noise_ratio', type=float, default=0.05)
+    parser.add_argument('--image', nargs='+', type=str, required=True)
+    parser.add_argument('--window_size', type=int, nargs='+', required=True)
+    parser.add_argument('--noise_type', type=str, nargs='?', default='None')
+    parser.add_argument('--snr', type=float, nargs='?', default=20)
+    parser.add_argument('--noise_ratio', type=float, nargs='?', default=0.05)
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = parse_args()
-    images, src_image, noise_img = evaluate(args.image, args.n, args.noise_type, snr=args.snr, noise_ratio=args.noise_ratio)
+    images, src_image, noise_img = evaluate(args.image[0], args.window_size[0], args.noise_type, snr=args.snr, noise_ratio=args.noise_ratio)
     plot_images(images, src_image, noise_img)
 
 
