@@ -141,30 +141,38 @@ def evaluate_window_size():
 def evaluate_r():
     img = Image.open('images/Set12/05.png')
     img = np.array(img)
-    noise_img = noisify(img, 'gaussian', snr=10)
-    rMSE = []
+    noise_img = noisify(img, 's&p', noise_ratio=0.1)
+    filtered = []
     r = []
     for i in range(1,6):
         img_filtered = generalize_max_median_filter(noise_img ,5, i)
-        rMSE.append(root_mean_squared_error(img, img_filtered))
         r.append(i)
-        if i == 2:
-            plt.imshow(img_filtered, cmap='gray')
-            plt.savefig('results/r_2_11.png')
-            plt.close()
-        if i == 4:
-            plt.imshow(img_filtered, cmap='gray')
-            plt.savefig('results/r_4_11.png')
-            plt.close()
+        filtered.append(img_filtered)
+    plot, axs = plt.subplots(1, 6, figsize=(20, 10))
+    axs[0].imshow(img, cmap='gray')
+    axs[0].set_title('Original')
+    for i in range(1,6):
+        axs[i].imshow(filtered[i-1], cmap='gray')
+        axs[i].set_title('Filtered with r: '+str(i))
+    plot.savefig('results/r_images.png')
+    plot.show()
+    plt.close(plot)
 
-    r = np.array(r)
-    rMSE = np.array(rMSE)
-    plt.plot(r, rMSE)
-    plt.xlabel('r', )
-    plt.ylabel('rMSE')
-    plt.xticks(r)
-
-    plt.savefig('results/r.png')
+    #     if i == 2:
+    #         plt.imshow(img_filtered, cmap='gray')
+    #         plt.savefig('results/r_2_11.png')
+    #         plt.close()
+    #     if i == 4:
+    #         plt.imshow(img_filtered, cmap='gray')
+    #         plt.savefig('results/r_4_11.png')
+    #         plt.close()
+    #
+    # r = np.array(r)
+    # rMSE = np.array(rMSE)
+    # plt.plot(r, rMSE)
+    # plt.xlabel('r', )
+    # plt.ylabel('rMSE')
+    # plt.xticks(r)
 
 
 # images = os.listdir('images/Set12')
@@ -173,5 +181,5 @@ def evaluate_r():
 #     evaluate_gaussian_noise('images/Set12/'+image)
 #     evaluate_snp('images/Set12/'+image)
 
-evaluate_window_size()
-# evaluate_r()
+# evaluate_window_size()
+evaluate_r()
