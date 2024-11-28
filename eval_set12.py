@@ -181,5 +181,21 @@ def evaluate_r():
 #     evaluate_gaussian_noise('images/Set12/'+image)
 #     evaluate_snp('images/Set12/'+image)
 
+def max_median_filter_comparison():
+    img = Image.open('images/Set12/05.png')
+    img = np.array(img)
+    noise_img = noisify(img, 's&p', noise_ratio=0.1)
+    img_filtered = generalize_max_median_filter(noise_img, 5, 5)
+    img_filtered2 = generalize_max_median_filter(noise_img, 5, 4)
+
+    flot, axs = plt.subplots(1, 2, figsize=(15, 10))
+    axs[0].imshow(img_filtered, cmap='gray')
+    axs[0].set_title('Filtered with Median Filter')
+    axs[1].imshow(img_filtered2, cmap='gray')
+    axs[1].set_title('Filtered with Generalized Max Median Filter')
+    plt.savefig('results/max_median_comparison.png')
+    plt.show()
+    plt.close()
+
+max_median_filter_comparison()
 # evaluate_window_size()
-evaluate_r()
