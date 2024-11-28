@@ -2,8 +2,10 @@ from typing import List
 
 from PIL import Image
 import numpy as np
+from debugpy.common.timestamp import current
 from skimage.filters import window
 
+import time
 from filter import generalize_max_median_filter
 import cv2 as cv
 import matplotlib.pyplot as plt
@@ -99,22 +101,39 @@ def evaluate_window_size():
     noise_img = noisify(img, 's&p', noise_ratio=0.1)
     rMSE = []
     window_size = []
+    ts = []
+    n = []
+    filtered_images = []
     for i in range(2,11):
+        current_time = time.time()
         img_filtered = generalize_max_median_filter(noise_img ,i, 3)
+        finish_time = time.time()
+        t = finish_time - current_time
+        ts.append(t)
         rMSE.append(root_mean_squared_error(img, img_filtered))
         window_size.append(2*i+1)
-        if i == 2:
-            plt.imshow(img_filtered, cmap='gray')
-            plt.savefig('results/window_size_5.png')
-            plt.close()
-        if i == 10:
-            plt.imshow(img_filtered, cmap='gray')
-            plt.savefig('results/window_size_21.png')
-            plt.close()
-    plt.plot(window_size, rMSE)
+        if i==2 or i==10 or i%4==0:
+            filtered_images.append(img_filtered)
+            n.append(i)
+
+    plot, axs = plt.subplots(1, 5, figsize=(15, 10))
+    axs[0].imshow(img, cmap='gray')
+    axs[0].set_title('Original')
+    for i in range(1,5):
+        axs[i].imshow(filtered_images[i-1], cmap='gray')
+        axs[i].set_title('Filtered with window size: '+str(2*(n[i-1])+1))
+    plot.savefig('results/window_size_images.png')
+    plt.close(plot)
+
+
+    ln2 = plt.plot(window_size, rMSE, label = 'rMSE')
     plt.xticks(window_size)
     plt.xlabel('Window Size')
     plt.ylabel('rMSE')
+    ln1 = plt.twinx().plot(window_size, ts, 'r', label = 'Time (s)')
+    lns = ln1 + ln2
+    labs = [l.get_label() for l in lns]
+    plt.legend(lns, labs, loc=1)
     plt.title('Effect of Window Size on the result')
     plt.savefig('results/window_size.png')
     plt.close()
@@ -122,7 +141,7 @@ def evaluate_window_size():
 def evaluate_r():
     img = Image.open('images/Set12/05.png')
     img = np.array(img)
-    noise_img = noisify(img, 's&p', noise_ratio=0.1)
+    noise_img = noisify(img, 'gaussian', snr=10)
     rMSE = []
     r = []
     for i in range(1,6):
@@ -155,4 +174,4 @@ def evaluate_r():
 #     evaluate_snp('images/Set12/'+image)
 
 evaluate_window_size()
-evaluate_r()
+# evaluate_r()
